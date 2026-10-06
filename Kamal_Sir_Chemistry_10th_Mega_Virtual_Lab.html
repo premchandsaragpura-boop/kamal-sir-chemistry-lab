@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kamal Sir Chemistry 10th Class — Mega Virtual Lab</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,"Noto Sans Devanagari",sans-serif;background:#071525;color:#172033}
+header{position:sticky;top:0;z-index:20;background:#062a52;color:#fff;padding:14px 18px;box-shadow:0 3px 15px #0006}
+.logo{font-size:23px;font-weight:800}.logo b{color:#ffd426}
+.app{max-width:1600px;margin:auto;background:#f4f7fb;min-height:100vh}
+main{padding:14px}.room{background:linear-gradient(#dfcba8,#b79b70);border-radius:20px;padding:14px;min-height:900px}
+.toolbar{background:#fff;border-radius:14px;padding:11px;margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select{padding:10px;border:1px solid #c8d2dc;border-radius:10px;font-size:15px}
+input{min-width:210px;flex:1}
+button{border:0;border-radius:10px;padding:10px 13px;font-weight:700;cursor:pointer;background:#1268a9;color:#fff}
+.secondary{background:#e8f2f8;color:#1268a9}.danger{background:#b63c3c}
+.notice{background:#fff6dc;border-left:5px solid #e0a400;padding:10px;border-radius:10px;margin:10px 0}
+.shelf{background:#775638;padding:12px;border-radius:14px;margin-bottom:12px}
+.shelf h3{color:white;margin:3px 0 10px}
+.periodic{display:grid;grid-template-columns:repeat(10,minmax(75px,1fr));gap:7px;max-height:510px;overflow:auto;padding:4px}
+.element{background:#fff;border:2px solid #d5dce5;border-radius:10px;padding:7px;min-height:82px;cursor:grab;box-shadow:0 3px 7px #0003;position:relative;transition:.15s}
+.element:hover{transform:translateY(-2px);border-color:#1268a9}
+.element strong{position:absolute;top:4px;left:6px;font-size:11px;color:#657384}
+.element b{display:block;text-align:center;font-size:22px;margin-top:7px}
+.element span{display:block;text-align:center;font-size:11px;margin-top:3px}
+.work{display:grid;grid-template-columns:1fr 1.45fr 1fr;gap:12px;margin-top:12px}
+.panel{background:#fff;border-radius:16px;padding:14px;box-shadow:0 4px 14px #0002}
+.bench{min-height:370px;border:3px dashed #9aa9ba;border-radius:14px;background:#edf5fa;padding:12px;text-align:center}
+.beaker{width:160px;height:185px;border:5px solid #526273;border-top:0;border-radius:0 0 28px 28px;margin:25px auto 8px;position:relative;overflow:hidden;background:#ffffffcc}
+.liquid{position:absolute;bottom:0;width:100%;height:0;background:#ccecff;transition:.5s}
+.beaker span{position:absolute;top:12px;left:0;right:0;font-weight:700}
+#selected,#info{background:#eff9ff;padding:11px;border-radius:10px;min-height:80px}
+.sample-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:#e8f2f8;border:1px solid #b8d4e6;border-radius:999px;padding:5px 8px;font-size:12px}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.stat{background:#fff;padding:7px 10px;border-radius:9px;font-weight:700}
+.empty{padding:30px;color:#657384}
+footer{text-align:center;padding:15px;color:#5b6570}
+@media(max-width:1050px){.periodic{grid-template-columns:repeat(6,minmax(75px,1fr))}.work{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.periodic{grid-template-columns:repeat(3,minmax(75px,1fr))}.work{grid-template-columns:1fr}.room{border-radius:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="logo">🧪 <b>Kamal Sir</b> Chemistry 10th Class</div>
+  <div>🏫 Mega Virtual Chemistry Room • 118 Elements</div>
+</header>
+<main><div class="room">
+
+<div class="toolbar">
+  <strong>🔎 तत्व खोजें:</strong>
+  <input id="search" placeholder="Hydrogen, हाइड्रोजन, H..." oninput="filterElements()">
+  <select id="filter" onchange="filterElements()">
+    <option value="all">सभी तत्व</option>
+    <option value="1-20">1–20</option>
+    <option value="21-40">21–40</option>
+    <option value="41-60">41–60</option>
+    <option value="61-80">61–80</option>
+    <option value="81-100">81–100</option>
+    <option value="101-118">101–118</option>
+  </select>
+  <button class="secondary" onclick="showAll()">सभी 118</button>
+</div>
+
+<div class="notice">
+  ℹ️ सभी 118 तत्व <b>virtual sealed samples</b> हैं। यह शैक्षिक simulation है; वास्तविक खतरनाक या रेडियोधर्मी पदार्थों को संभालने का निर्देश नहीं देता।
+</div>
+
+<div class="stats">
+  <div class="stat">⚛️ कुल: <span id="total">118</span></div>
+  <div class="stat">👁️ दिख रहे: <span id="visible">118</span></div>
+  <div class="stat">🧪 बीकर में: <span id="count">0</span></div>
+</div>
+
+<div class="shelf">
+<h3>⚛️ Periodic Table — 118 Elements</h3>
+<div id="periodic" class="periodic"></div>
+</div>
+
+<div class="work">
+  <div class="panel">
+    <h3>📦 Selected Sample</h3>
+    <div id="selected">किसी तत्व को चुनें या Drag करके workbench पर रखें।</div>
+    <h3>🧰 सुरक्षित उपकरण</h3>
+    <div>🥛 Beaker &nbsp; 🧪 Test Tube &nbsp; 🥄 Spatula</div>
+    <h3>📋 Samples</h3>
+    <div id="sampleList" class="sample-list"><span class="empty">अभी कोई sample नहीं।</span></div>
+  </div>
+
+  <div class="panel">
+    <h3>🧪 प्रयोग की मेज</h3>
+    <div id="bench" class="bench" ondragover="event.preventDefault()" ondrop="drop(event)">
+      <div>किसी element को यहाँ <b>Drag & Drop</b> करें</div>
+      <div class="beaker"><span>Virtual Beaker</span><div class="liquid" id="liquid"></div></div>
+      <div id="contents">बीकर खाली है।</div>
+    </div>
+    <br>
+    <button onclick="simulate()">▶ सुरक्षित Simulation</button>
+    <button class="secondary" onclick="resetLab()">↻ Reset</button>
+    <button class="danger" onclick="clearSamples()">🗑 सभी हटाएँ</button>
+  </div>
+
+  <div class="panel">
+    <h3>📚 Element Info</h3>
+    <div id="info">किसी तत्व पर क्लिक करें।</div>
+    <hr>
+    <b>🧠 सीखें</b>
+    <p>Element का symbol और atomic number देखकर periodic table की practice करें।</p>
+    <p>किसी sample को चुनें और फिर उसे virtual beaker में drag करें।</p>
+  </div>
+</div>
+
+</div></main>
+<footer>© Kamal Sir Chemistry 10th Class • Mega Virtual Lab</footer>
+</div>
+
+<script>
+const data = [{"n":1,"s":"H","hi":"हाइड्रोजन","en":"हाइड्रोजन"},{"n":2,"s":"He","hi":"हीलियम","en":"हीलियम"},{"n":3,"s":"Li","hi":"लिथियम","en":"लिथियम"},{"n":4,"s":"Be","hi":"बेरीलियम","en":"बेरीलियम"},{"n":5,"s":"B","hi":"बोरोन","en":"बोरोन"},{"n":6,"s":"C","hi":"कार्बन","en":"कार्बन"},{"n":7,"s":"N","hi":"नाइट्रोजन","en":"नाइट्रोजन"},{"n":8,"s":"O","hi":"ऑक्सीजन","en":"ऑक्सीजन"},{"n":9,"s":"F","hi":"फ्लोरीन","en":"फ्लोरीन"},{"n":10,"s":"Ne","hi":"निऑन","en":"निऑन"},{"n":11,"s":"Na","hi":"सोडियम","en":"सोडियम"},{"n":12,"s":"Mg","hi":"मैग्नीशियम","en":"मैग्नीशियम"},{"n":13,"s":"Al","hi":"एल्युमिनियम","en":"एल्युमिनियम"},{"n":14,"s":"Si","hi":"सिलिकॉन","en":"सिलिकॉन"},{"n":15,"s":"P","hi":"फॉस्फोरस","en":"फॉस्फोरस"},{"n":16,"s":"S","hi":"सल्फर","en":"सल्फर"},{"n":17,"s":"Cl","hi":"क्लोरीन","en":"क्लोरीन"},{"n":18,"s":"Ar","hi":"आर्गन","en":"आर्गन"},{"n":19,"s":"K","hi":"पोटैशियम","en":"पोटैशियम"},{"n":20,"s":"Ca","hi":"कैल्शियम","en":"कैल्शियम"},{"n":21,"s":"Sc","hi":"स्कैंडियम","en":"स्कैंडियम"},{"n":22,"s":"Ti","hi":"टाइटेनियम","en":"टाइटेनियम"},{"n":23,"s":"V","hi":"वैनाडियम","en":"वैनाडियम"},{"n":24,"s":"Cr","hi":"क्रोमियम","en":"क्रोमियम"},{"n":25,"s":"Mn","hi":"मैंगनीज","en":"मैंगनीज"},{"n":26,"s":"Fe","hi":"लोहा","en":"लोहा"},{"n":27,"s":"Co","hi":"कोबाल्ट","en":"कोबाल्ट"},{"n":28,"s":"Ni","hi":"निकल","en":"निकल"},{"n":29,"s":"Cu","hi":"तांबा","en":"तांबा"},{"n":30,"s":"Zn","hi":"जस्ता","en":"जस्ता"},{"n":31,"s":"Ga","hi":"गैलियम","en":"गैलियम"},{"n":32,"s":"Ge","hi":"जर्मेनियम","en":"जर्मेनियम"},{"n":33,"s":"As","hi":"आर्सेनिक","en":"आर्सेनिक"},{"n":34,"s":"Se","hi":"सेलेनियम","en":"सेलेनियम"},{"n":35,"s":"Br","hi":"ब्रोमीन","en":"ब्रोमीन"},{"n":36,"s":"Kr","hi":"क्रिप्टॉन","en":"क्रिप्टॉन"},{"n":37,"s":"Rb","hi":"रुबिडियम","en":"रुबिडियम"},{"n":38,"s":"Sr","hi":"स्ट्रॉन्शियम","en":"स्ट्रॉन्शियम"},{"n":39,"s":"Y","hi":"इट्रियम","en":"इट्रियम"},{"n":40,"s":"Zr","hi":"जिरकोनियम","en":"जिरकोनियम"},{"n":41,"s":"Nb","hi":"नायोबियम","en":"नायोबियम"},{"n":42,"s":"Mo","hi":"मोलिब्डेनम","en":"मोलिब्डेनम"},{"n":43,"s":"Tc","hi":"टेक्नेटियम","en":"टेक्नेटियम"},{"n":44,"s":"Ru","hi":"रुथेनियम","en":"रुथेनियम"},{"n":45,"s":"Rh","hi":"रोडियम","en":"रोडियम"},{"n":46,"s":"Pd","hi":"पैलेडियम","en":"पैलेडियम"},{"n":47,"s":"Ag","hi":"चांदी","en":"चांदी"},{"n":48,"s":"Cd","hi":"कैडमियम","en":"कैडमियम"},{"n":49,"s":"In","hi":"इंडियम","en":"इंडियम"},{"n":50,"s":"Sn","hi":"टिन","en":"टिन"},{"n":51,"s":"Sb","hi":"एंटिमनी","en":"एंटिमनी"},{"n":52,"s":"Te","hi":"टेल्यूरियम","en":"टेल्यूरियम"},{"n":53,"s":"I","hi":"आयोडीन","en":"आयोडीन"},{"n":54,"s":"Xe","hi":"जेनॉन","en":"जेनॉन"},{"n":55,"s":"Cs","hi":"सीज़ियम","en":"सीज़ियम"},{"n":56,"s":"Ba","hi":"बेरियम","en":"बेरियम"},{"n":57,"s":"La","hi":"लैंथेनम","en":"लैंथेनम"},{"n":58,"s":"Ce","hi":"सीरियम","en":"सीरियम"},{"n":59,"s":"Pr","hi":"प्रसीओडिमियम","en":"प्रसीओडिमियम"},{"n":60,"s":"Nd","hi":"नियोडिमियम","en":"नियोडिमियम"},{"n":61,"s":"Pm","hi":"प्रोमेथियम","en":"प्रोमेथियम"},{"n":62,"s":"Sm","hi":"समेरियम","en":"समेरियम"},{"n":63,"s":"Eu","hi":"यूरोपियम","en":"यूरोपियम"},{"n":64,"s":"Gd","hi":"गैडोलिनियम","en":"गैडोलिनियम"},{"n":65,"s":"Tb","hi":"टर्बियम","en":"टर्बियम"},{"n":66,"s":"Dy","hi":"डिस्प्रोसियम","en":"डिस्प्रोसियम"},{"n":67,"s":"Ho","hi":"होल्मियम","en":"होल्मियम"},{"n":68,"s":"Er","hi":"एर्बियम","en":"एर्बियम"},{"n":69,"s":"Tm","hi":"थुलियम","en":"थुलियम"},{"n":70,"s":"Yb","hi":"इटर्बियम","en":"इटर्बियम"},{"n":71,"s":"Lu","hi":"ल्यूटेटियम","en":"ल्यूटेटियम"},{"n":72,"s":"Hf","hi":"हैफ्नियम","en":"हैफ्नियम"},{"n":73,"s":"Ta","hi":"टैंटलम","en":"टैंटलम"},{"n":74,"s":"W","hi":"टंग्स्टन","en":"टंग्स्टन"},{"n":75,"s":"Re","hi":"रेनियम","en":"रेनियम"},{"n":76,"s":"Os","hi":"ऑस्मियम","en":"ऑस्मियम"},{"n":77,"s":"Ir","hi":"इरिडियम","en":"इरिडियम"},{"n":78,"s":"Pt","hi":"प्लैटिनम","en":"प्लैटिनम"},{"n":79,"s":"Au","hi":"सोना","en":"सोना"},{"n":80,"s":"Hg","hi":"पारा","en":"पारा"},{"n":81,"s":"Tl","hi":"थैलियम","en":"थैलियम"},{"n":82,"s":"Pb","hi":"सीसा","en":"सीसा"},{"n":83,"s":"Bi","hi":"बिस्मथ","en":"बिस्मथ"},{"n":84,"s":"Po","hi":"पोलोनियम","en":"पोलोनियम"},{"n":85,"s":"At","hi":"एस्टाटीन","en":"एस्टाटीन"},{"n":86,"s":"Rn","hi":"रेडॉन","en":"रेडॉन"},{"n":87,"s":"Fr","hi":"फ्रैंशियम","en":"फ्रैंशियम"},{"n":88,"s":"Ra","hi":"रेडियम","en":"रेडियम"},{"n":89,"s":"Ac","hi":"ऐक्टिनियम","en":"ऐक्टिनियम"},{"n":90,"s":"Th","hi":"थोरियम","en":"थोरियम"},{"n":91,"s":"Pa","hi":"प्रोटैक्टिनियम","en":"प्रोटैक्टिनियम"},{"n":92,"s":"U","hi":"यूरेनियम","en":"यूरेनियम"},{"n":93,"s":"Np","hi":"नेप्टूनियम","en":"नेप्टूनियम"},{"n":94,"s":"Pu","hi":"प्लूटोनियम","en":"प्लूटोनियम"},{"n":95,"s":"Am","hi":"अमेरिकियम","en":"अमेरिकियम"},{"n":96,"s":"Cm","hi":"क्यूरियम","en":"क्यूरियम"},{"n":97,"s":"Bk","hi":"बर्केलियम","en":"बर्केलियम"},{"n":98,"s":"Cf","hi":"कैलिफोर्नियम","en":"कैलिफोर्नियम"},{"n":99,"s":"Es","hi":"आइंस्टीनियम","en":"आइंस्टीनियम"},{"n":100,"s":"Fm","hi":"फर्मियम","en":"फर्मियम"},{"n":101,"s":"Md","hi":"मेंडेलीवियम","en":"मेंडेलीवियम"},{"n":102,"s":"No","hi":"नोबेलियम","en":"नोबेलियम"},{"n":103,"s":"Lr","hi":"लॉरेन्सियम","en":"लॉरेन्सियम"},{"n":104,"s":"Rf","hi":"रदरफोर्डियम","en":"रदरफोर्डियम"},{"n":105,"s":"Db","hi":"डब्नियम","en":"डब्नियम"},{"n":106,"s":"Sg","hi":"सीबोर्गियम","en":"सीबोर्गियम"},{"n":107,"s":"Bh","hi":"बोह्रियम","en":"बोह्रियम"},{"n":108,"s":"Hs","hi":"हैसियम","en":"हैसियम"},{"n":109,"s":"Mt","hi":"माइटनेरियम","en":"माइटनेरियम"},{"n":110,"s":"Ds","hi":"डार्मस्टैड्टियम","en":"डार्मस्टैड्टियम"},{"n":111,"s":"Rg","hi":"रोएंटजेनियम","en":"रोएंटजेनियम"},{"n":112,"s":"Cn","hi":"कोपर्निसियम","en":"कोपर्निसियम"},{"n":113,"s":"Nh","hi":"निहोनियम","en":"निहोनियम"},{"n":114,"s":"Fl","hi":"फ्लेरोवियम","en":"फ्लेरोवियम"},{"n":115,"s":"Mc","hi":"मॉस्कोवियम","en":"मॉस्कोवियम"},{"n":116,"s":"Lv","hi":"लिवरमोरियम","en":"लिवरमोरियम"},{"n":117,"s":"Ts","hi":"टेनेसिन","en":"टेनेसिन"},{"n":118,"s":"Og","hi":"ओगानेसन","en":"ओगानेसन"}];
+const periodic = document.getElementById('periodic');
+const search = document.getElementById('search');
+const filter = document.getElementById('filter');
+const elements = [];
+let selected = null, inBeaker = [];
+
+function render(){
+  periodic.innerHTML='';
+  data.forEach(el=>{
+    const card=document.createElement('div');
+    card.className='element';
+    card.draggable=true;
+    card.dataset.name=el.hi;
+    card.dataset.symbol=el.s;
+    card.innerHTML='<strong>'+el.n+'</strong><b>'+el.s+'</b><span>'+el.hi+'</span>';
+    card.onclick=()=>select(card,el);
+    card.ondragstart=e=>{
+      e.dataTransfer.setData('n',el.n);
+      e.dataTransfer.setData('name',el.hi);
+      e.dataTransfer.setData('symbol',el.s);
+    };
+    periodic.appendChild(card);
+    elements.push(card);
+  });
+  filterElements();
+}
+function select(card,el){
+  selected=el;
+  document.getElementById('selected').innerHTML='<b>⚛️ '+el.s+'</b><br>'+el.hi+'<br><small>Atomic number: '+el.n+' • Virtual sample</small>';
+  document.getElementById('info').innerHTML='<b>'+el.hi+'</b><br>Symbol: <b>'+el.s+'</b><br>Atomic number: '+el.n;
+}
+function drop(e){
+  const n=e.dataTransfer.getData('n'), name=e.dataTransfer.getData('name'), symbol=e.dataTransfer.getData('symbol');
+  if(!name)return;
+  inBeaker.push({n,name,symbol});
+  updateBeaker();
+}
+function updateBeaker(){
+  document.getElementById('count').textContent=inBeaker.length;
+  document.getElementById('contents').innerHTML=inBeaker.length
+    ? 'बीकर में: '+inBeaker.map(x=>x.symbol+' ('+x.name+')').join(' + ')
+    : 'बीकर खाली है।';
+  document.getElementById('liquid').style.height=inBeaker.length?'35%':'0';
+  const list=document.getElementById('sampleList');
+  list.innerHTML=inBeaker.length
+    ? inBeaker.map(x=>'<span class="chip">'+x.n+' • '+x.symbol+'</span>').join('')
+    : '<span class="empty">अभी कोई sample नहीं।</span>';
+}
+function simulate(){
+  if(!inBeaker.length){alert('पहले कोई virtual sample बीकर में रखें।');return;}
+  document.getElementById('contents').innerHTML += '<br>✅ सुरक्षित virtual simulation पूरी हुई।';
+}
+function resetLab(){inBeaker=[];updateBeaker();}
+function clearSamples(){resetLab();}
+function filterElements(){
+  const q=search.value.trim().toLowerCase();
+  const range=filter.value;
+  let visible=0;
+  elements.forEach(card=>{
+    const n=+card.querySelector('strong').textContent;
+    const matchQ=!q || card.dataset.name.toLowerCase().includes(q) || card.dataset.symbol.toLowerCase().includes(q);
+    let matchR=true;
+    if(range!=='all'){
+      const [a,b]=range.split('-').map(Number); matchR=n>=a&&n<=b;
+    }
+    const ok=matchQ&&matchR;
+    card.style.display=ok?'block':'none';
+    if(ok)visible++;
+  });
+  document.getElementById('visible').textContent=visible;
+}
+function showAll(){search.value='';filter.value='all';filterElements();}
+render();
+</script>
+</body>
+</html>
